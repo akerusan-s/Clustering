@@ -17,7 +17,6 @@ def show_plot(plot, clusters=0):
     colors = ['black']
     if clusters != 0:
         colors = [(random(), random(), random()) for _ in range(clusters)]
-        print(colors)
 
     fig, (ax1) = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
 

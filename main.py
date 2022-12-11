@@ -2,6 +2,8 @@ from libs.data_preparer import *
 from libs.matrix_tools import *
 from libs.metrics import *
 from libs.models import *
+from math import exp, pi
+from random import choice
 
 
 def hierarchical_clustering(data, k=1):
@@ -100,11 +102,94 @@ def graph_clustering(data, k=1):
     return clusterized_data, len(result_clusters)
 
 
+def em_clustering(data, k):
+
+    def p(kk, x):
+        res = (1 / (2 * pi * o[kk][0] * o[kk][1])) *\
+              exp((-1 / 2) * (((x.x - u[kk][0]) / o[kk][0]) ** 2 +
+                              ((x.y - u[kk][1]) / o[kk][1]) ** 2))
+        return res
+
+    points = [Point(i[0], i[1]) for i in data]
+
+    l = 3
+
+    M = len(points)
+    Y = k
+
+    w = [1/Y for _ in range(Y)]
+    u = [[points[0].x, points[0].y] for _ in range(Y)]
+
+    o = [[0] * 2 for _ in range(Y)]
+    for i in range(Y):
+        o[i][0] = (1 / (M * Y)) * sum([(points[_].x - u[i][0]) ** 2 for _ in range(M)])
+        o[i][1] = (1 / (M * Y)) * sum([(points[_].y - u[i][1]) ** 2 for _ in range(M)])
+
+    g = [[0] * Y for _ in range(M)]
+    for i in range(l):
+        for y in range(Y):
+            for j, point in enumerate(points):
+                p_kx = w[y] * p(y, point) / sum([w[_] * p(_, point) for _ in range(Y)])
+                g[j][y] = p_kx
+        print(*g, sep="\n")
+
+        for y in range(Y):
+            w[y] = (1 / M) * sum([g[_][y] for _ in range(M)])
+
+        for y in range(Y):
+            u[y][0] = (1 / (M * w[y])) * sum([g[_][y] * points[_].x for _ in range(M)])
+            u[y][1] = (1 / (M * w[y])) * sum([g[_][y] * points[_].y for _ in range(M)])
+
+        for y in range(Y):
+            o[y][0] = (1 / (M * w[y])) * sum([g[_][y] * (points[_].x - u[y][0]) ** 2 for _ in range(M)])
+            o[y][1] = (1 / (M * w[y])) * sum([g[_][y] * (points[_].y - u[y][1]) ** 2 for _ in range(M)])
+
+    clusterized_data = []
+    for i in range(M):
+        max_v = -1
+        max_v_ind = -1
+        for j in range(Y):
+            if g[i][j] > max_v:
+                max_v = g[i][j]
+                max_v_ind = j
+        clusterized_data.append([points[i].x, points[i].y, max_v_ind])
+
+    return clusterized_data, Y
+
+
+def k_means_clustering(data, k):
+
+    points = [[i[0], i[1], 0] for i in data]
+    u = [choice(points)[:2] for _ in range(k)]
+
+    prev_points = []
+    while prev_points != points:
+        u_points = [[[], []] for _ in range(k)]
+        for point in points:
+            distances = [ev_dist_coord(j[0], j[1], point[0], point[1]) for j in u]
+            min_dist = min(distances)
+            for j, d in enumerate(distances):
+                if d == min_dist:
+                    point[2] = j
+                    u_points[j][0] += [point[0]]
+                    u_points[j][1] += [point[1]]
+                    break
+        for j in range(len(u)):
+            if u_points[j][1] and u_points[j][0]:
+                u[j] = [sum(u_points[j][0]) / len(u_points[j][0]),
+                        sum(u_points[j][1]) / len(u_points[j][1])]
+        prev_points = points
+
+    return points, k
+
+
 def main():
     data = get_data("data/data_prepared.txt")
-    k = 4
+    k = 3
     # points, clusters_amount = hierarchical_clustering(data, k=k)
-    points, clusters_amount = graph_clustering(data, k=k)
+    # points, clusters_amount = graph_clustering(data, k=k)
+    # points, clusters_amount = em_clustering(data, k=k)
+    points, clusters_amount = k_means_clustering(data, k=k)
     show_plot(points, clusters=clusters_amount)
 
 

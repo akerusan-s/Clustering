@@ -21,6 +21,21 @@ def find_minimal_from_matrix(matrix):
     return min_row, min_col, min_value
 
 
+def find_maximal_from_matrix(matrix):
+    """ Return row, col, value of maximal element of matrix """
+    max_value = -10
+    max_row, max_col = 0, 0
+
+    for i in range(len(matrix)):
+        for j in range(len(matrix)):
+            if matrix[i][j] > max_value:
+                max_value = matrix[i][j]
+                max_row = i
+                max_col = j
+
+    return max_row, max_col, max_value
+
+
 def linear(matrix):
     """ Return linear list with values from 2-dim matrix """
     lin = []

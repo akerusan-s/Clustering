@@ -1,5 +1,6 @@
-from data_preparer import show_plot, get_data
-from helpful_tools import print_matrix, find_minimal_from_matrix
+from data_preparer import *
+from helpful_tools import *
+from metrics import *
 
 
 class Cluster:
@@ -19,29 +20,47 @@ class Dot:
         self.x = x
         self.y = y
 
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
 
-def hierarchical_clustering(data):
+    def __repr__(self):
+        return f"Dot({self.x}, {self.y})"
 
-    def ev_dist(x1, y1, x2, y2):
-        return ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
 
-    def lu_dist(c1, c2):
-        centre_of_c1_x = sum([d.x for d in c1.dots]) / len(c1)
-        centre_of_c1_y = sum([d.y for d in c1.dots]) / len(c1)
+class Edge:
+    def __init__(self, dot1, dot2):
+        self.dot1 = dot1
+        self.dot2 = dot2
+        self.length = ev_dist(dot1, dot2)
 
-        centre_of_c2_x = sum([d.x for d in c2.dots]) / len(c2)
-        centre_of_c2_y = sum([d.y for d in c2.dots]) / len(c2)
+    def __eq__(self, other):
+        if ((self.dot1 == other.dot1 and self.dot2 == other.dot2) or
+                (self.dot1 == other.dot2 and self.dot2 == other.dot1)):
+            return True
+        return False
 
-        dist_centres = ev_dist(centre_of_c1_x, centre_of_c1_y, centre_of_c2_x, centre_of_c2_y)
+    def __repr__(self):
+        return f"Edge {self.dot1} to {self.dot2} with len {round(self.length, 5)}"
 
-        return len(c1) * len(c2) * (dist_centres ** 2) / (len(c1) + len(c2))
 
+class Graph:
+    def __init__(self, root):
+        self.roots = [root]
+        self.edges = []
+
+    def add_dot(self, graph_root, root):
+        graph_root_ind = self.roots.index(graph_root)
+        self.roots.append(root)
+        self.edges.append(Edge(self.roots[graph_root_ind], root))
+
+
+def hierarchical_clustering(data, k=1):
     c = [Cluster(Dot(i[0], i[1])) for i in data]
     ln = len(c)
 
     distances = [[lu_dist(i, j) for j in c] for i in c]
 
-    for t in range(2, ln + 1 - 3):
+    for t in range(2, ln + 1 - k):
 
         u_ind, v_ind, min_dist = find_minimal_from_matrix(distances)
         u = c[u_ind]
@@ -69,9 +88,73 @@ def hierarchical_clustering(data):
     return clusterized_data, len(c)
 
 
+def graph_clustering(data, k=1):
+
+    def del_n_edges(graph, n):
+        k_edges = sorted(graph.edges, key=lambda x: x.length)[-n:]
+        gr = graph
+        res = []
+
+        for edge in k_edges:
+            del gr.edges[gr.edges.index(edge)]
+
+        for edge in gr.edges:
+            if res:
+                flag = True
+                for cluster in range(len(res)):
+                    if edge.dot1 in res[cluster]:
+                        res[cluster].append(edge.dot2)
+                        flag = False
+                    elif edge.dot2 in res[cluster]:
+                        res[cluster].append(edge.dot1)
+                        flag = False
+                if flag:
+                    res.append([edge.dot1, edge.dot2])
+            else:
+                res.append([edge.dot1, edge.dot2])
+
+        for root in gr.roots:
+            if root not in linear(res):
+                res.append([root])
+
+        return res
+
+    dots = [Dot(i[0], i[1]) for i in data]
+    distances = [[ev_dist(i, j) for j in dots] for i in dots]
+
+    dot_start1_ind, dot_start2_ind, distance = find_minimal_from_matrix(distances)
+    dot_start1 = dots[dot_start1_ind]
+    dot_start2 = dots[dot_start2_ind]
+
+    spanning_tree = Graph(dot_start1)
+    spanning_tree.add_dot(dot_start1, dot_start2)
+
+    if dot_start1_ind < dot_start2_ind:
+        del dots[dot_start2_ind]
+        del dots[dot_start1_ind]
+    else:
+        del dots[dot_start1_ind]
+        del dots[dot_start2_ind]
+
+    while dots:
+        nearest_dot = min(spanning_tree.roots, key=lambda x: ev_dist(x, dots[0]))
+        spanning_tree.add_dot(nearest_dot, dots[0])
+        del dots[0]
+
+    result_clusters = del_n_edges(spanning_tree, k)
+    clusterized_data = []
+    for i in range(len(result_clusters)):
+        for dt in result_clusters[i]:
+            clusterized_data.append([dt.x, dt.y, i])
+
+    return clusterized_data, len(result_clusters)
+
+
 def main():
     data = get_data("data_prepared.txt")
-    dots, clusters_amount = hierarchical_clustering(data)
+    k = 4
+    # dots, clusters_amount = hierarchical_clustering(data, k=k)
+    dots, clusters_amount = graph_clustering(data, k=k)
     show_plot(dots, clusters=clusters_amount)
 
 

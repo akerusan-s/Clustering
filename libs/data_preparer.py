@@ -16,15 +16,15 @@ def get_data(pth):
 def show_plot(plot, clusters=0):
     colors = ['black']
     if clusters != 0:
-        # colors = [plt.cm.tab10(i / clusters) for i in range(clusters)]
-        colors = [(random(), random(), random()) for i in range(clusters)]
+        colors = [(random(), random(), random()) for _ in range(clusters)]
+        print(colors)
 
     fig, (ax1) = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))
 
-    for dot in plot:
-        ax1.scatter(x=dot[0], y=dot[1], color=colors[dot[2]], s=40)
+    for point in plot:
+        ax1.scatter(x=point[0], y=point[1], color=colors[point[2]], s=40)
 
     ax1.set_title('Results')
-    # ax1.set_xlabel('serum_cholestoral')
+    # ax1.set_xlabel('serum_cholesterol')
     # ax1.set_ylabel('resting_blood_pressure')
     plt.show()

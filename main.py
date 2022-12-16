@@ -183,13 +183,60 @@ def k_means_clustering(data, k):
     return points, k
 
 
+def forel_clustering(data, k=1):
+    eps = 0.01
+    r = 20
+    points = [Point(i[0], i[1]) for i in data]
+    clusters = []
+
+    while points:
+        distances = [[ev_dist(i, j) for i in points] for j in points]
+        avers = []
+        for i in distances:
+            aver = sum(i)
+            avers.append(aver)
+
+        x0 = points[avers.index(min(avers))]
+
+        x0_prev = Point(-10, -10)
+
+        while ev_dist(x0, x0_prev) > eps:
+            c = Cluster(x0)
+            for p in points:
+                if 0 < ev_dist(x0, p) <= r:
+                    c.points += [p]
+            x0_new_x = sum([i.x for i in c.points]) / len(c)
+            x0_new_y = sum([i.y for i in c.points]) / len(c)
+            x0_new = Point(x0_new_x, x0_new_y)
+
+            x0_prev = x0
+            x0 = x0_new
+        if len(c) != 1:
+            print(c.points)
+            del c.points[c.points.index(x0_prev)]
+
+        for p in c.points:
+            del points[points.index(p)]
+
+        clusters.append(c)
+
+    clusterized_data = []
+    for i, c in enumerate(clusters):
+
+        for p in c.points:
+            clusterized_data.append([p.x, p.y, i])
+
+    return clusterized_data, len(clusters)
+
+
 def main():
-    data = get_data("data/data_prepared.txt")
+    data = get_big_data("data/data_prepared.txt")
     k = 3
     # points, clusters_amount = hierarchical_clustering(data, k=k)
     # points, clusters_amount = graph_clustering(data, k=k)
     # points, clusters_amount = em_clustering(data, k=k)
-    points, clusters_amount = k_means_clustering(data, k=k)
+    # points, clusters_amount = k_means_clustering(data, k=k)
+    points, clusters_amount = forel_clustering(data, k=k)
     show_plot(points, clusters=clusters_amount)
 
 

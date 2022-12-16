@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from random import random
+from random import random, randint
 
 
 def get_data(pth):
@@ -10,6 +10,22 @@ def get_data(pth):
             st = i.split(",")
             x, y = int(st[4]), int(st[3])
             plot.append([x, y, 0])
+    return plot
+
+
+def get_big_data(pth):
+    with open(pth, "r") as file:
+        raw_data = file.read().split("\n")
+        plot = []
+        for i in raw_data:
+            st = i.split(",")
+            x, y = int(st[4]), int(st[3])
+            plot.append([x, y, 0])
+
+            plot.append([randint(x-5, x+5), randint(y-5, y+5), 0])
+            plot.append([randint(x-5, x+5), randint(y-5, y+5), 0])
+            plot.append([randint(x-5, x+5), randint(y-5, y+5), 0])
+            plot.append([randint(x-5, x+5), randint(y-5, y+5), 0])
     return plot
 
 

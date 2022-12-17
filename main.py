@@ -2,7 +2,7 @@ from libs.data_preparer import *
 from libs.matrix_tools import *
 from libs.metrics import *
 from libs.models import *
-from math import exp, pi
+from math import exp, pi, sqrt
 from random import choice
 
 
@@ -105,25 +105,26 @@ def graph_clustering(data, k=1):
 def em_clustering(data, k):
 
     def p(kk, x):
-        res = (1 / (2 * pi * o[kk][0] * o[kk][1])) *\
-              exp((-1 / 2) * (((x.x - u[kk][0]) / o[kk][0]) ** 2 +
-                              ((x.y - u[kk][1]) / o[kk][1]) ** 2))
+        res = (1 / (2 * pi * sqrt(o[kk][0]) * sqrt(o[kk][1]))) *\
+              exp((-1 / 2) * (((x.x - u[kk][0]) / sqrt(o[kk][0])) ** 2 +
+                              ((x.y - u[kk][1]) / sqrt(o[kk][1])) ** 2))
         return res
 
     points = [Point(i[0], i[1]) for i in data]
 
-    l = 3
+    l = 2
 
     M = len(points)
     Y = k
 
     w = [1/Y for _ in range(Y)]
-    u = [[points[0].x, points[0].y] for _ in range(Y)]
+
+    u = [[_.x, _.y] for _ in [choice(points) for i in points]]
 
     o = [[0] * 2 for _ in range(Y)]
     for i in range(Y):
-        o[i][0] = (1 / (M * Y)) * sum([(points[_].x - u[i][0]) ** 2 for _ in range(M)])
-        o[i][1] = (1 / (M * Y)) * sum([(points[_].y - u[i][1]) ** 2 for _ in range(M)])
+        o[i][0] = ((1 / (M * Y)) * sum([(points[_].x - u[i][0]) ** 2 for _ in range(M)]))
+        o[i][1] = ((1 / (M * Y)) * sum([(points[_].y - u[i][1]) ** 2 for _ in range(M)]))
 
     g = [[0] * Y for _ in range(M)]
     for i in range(l):
@@ -131,7 +132,6 @@ def em_clustering(data, k):
             for j, point in enumerate(points):
                 p_kx = w[y] * p(y, point) / sum([w[_] * p(_, point) for _ in range(Y)])
                 g[j][y] = p_kx
-        print(*g, sep="\n")
 
         for y in range(Y):
             w[y] = (1 / M) * sum([g[_][y] for _ in range(M)])
@@ -198,6 +198,7 @@ def forel_clustering(data, r=10):
         x0 = points[avers.index(min(avers))]
 
         x0_prev = Point(-10, -10)
+        c = Cluster(x0)
 
         while ev_dist(x0, x0_prev) > eps:
             c = Cluster(x0)
@@ -211,7 +212,6 @@ def forel_clustering(data, r=10):
             x0_prev = x0
             x0 = x0_new
         if len(c) != 1:
-            print(c.points)
             del c.points[c.points.index(x0_prev)]
 
         for p in c.points:
@@ -230,14 +230,14 @@ def forel_clustering(data, r=10):
 
 def main():
     data = get_data("data/big_data_prepared.txt")
-    k = 3
+    k = 7
     r = 35
     # points, clusters_amount = hierarchical_clustering(data, k=k)
     # points, clusters_amount = graph_clustering(data, k=k)
     points, clusters_amount = em_clustering(data, k=k)
     # points, clusters_amount = k_means_clustering(data, k=k)
     # points, clusters_amount = forel_clustering(data, r=r)
-    show_plot(points, clusters=clusters_amount, name="Hierarchical Clustering (k=7)")
+    show_plot(points, clusters=clusters_amount, name="EM Clustering (k=7)")
 
 
 if __name__ == "__main__":

@@ -229,15 +229,20 @@ def forel_clustering(data, r=10):
 
 
 def main():
-    data = get_data("data/big_data_prepared.txt")
-    k = 7
-    r = 35
-    # points, clusters_amount = hierarchical_clustering(data, k=k)
-    # points, clusters_amount = graph_clustering(data, k=k)
-    points, clusters_amount = em_clustering(data, k=k)
-    # points, clusters_amount = k_means_clustering(data, k=k)
-    # points, clusters_amount = forel_clustering(data, r=r)
-    show_plot(points, clusters=clusters_amount, name="EM Clustering (k=7)")
+    data = get_data("data/big_data_prepared.txt")  # parsed data (viewed as [[x1, y1, 0], [x2, y2, 0], ...])
+
+    k = 3  # coefficient of clustering
+    r = 35  # radius of FOREL
+
+    # Для проверки работоспособности раскомментировать нужное
+
+    points, clusters_amount = hierarchical_clustering(data, k=k)  # k - number of partitions
+    # points, clusters_amount = graph_clustering(data, k=k)  # k - number of the longest deleted edges
+    # points, clusters_amount = em_clustering(data, k=k)  # k - number of clusters
+    # points, clusters_amount = k_means_clustering(data, k=k)  # k - number of clusters
+    # points, clusters_amount = forel_clustering(data, r=r)  # r - radius of each cluster
+
+    show_plot(points, clusters=clusters_amount, name=f"EM Clustering (k={k})")  # graphic depict
 
 
 if __name__ == "__main__":

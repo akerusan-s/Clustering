@@ -183,9 +183,8 @@ def k_means_clustering(data, k):
     return points, k
 
 
-def forel_clustering(data, k=1):
+def forel_clustering(data, r=10):
     eps = 0.01
-    r = 20
     points = [Point(i[0], i[1]) for i in data]
     clusters = []
 
@@ -230,14 +229,15 @@ def forel_clustering(data, k=1):
 
 
 def main():
-    data = get_big_data("data/data_prepared.txt")
+    data = get_data("data/big_data_prepared.txt")
     k = 3
+    r = 35
     # points, clusters_amount = hierarchical_clustering(data, k=k)
     # points, clusters_amount = graph_clustering(data, k=k)
-    # points, clusters_amount = em_clustering(data, k=k)
+    points, clusters_amount = em_clustering(data, k=k)
     # points, clusters_amount = k_means_clustering(data, k=k)
-    points, clusters_amount = forel_clustering(data, k=k)
-    show_plot(points, clusters=clusters_amount)
+    # points, clusters_amount = forel_clustering(data, r=r)
+    show_plot(points, clusters=clusters_amount, name="Hierarchical Clustering (k=7)")
 
 
 if __name__ == "__main__":

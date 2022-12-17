@@ -112,7 +112,7 @@ def em_clustering(data, k):
 
     points = [Point(i[0], i[1]) for i in data]
 
-    l = 2
+    l = 100
 
     M = len(points)
     Y = k

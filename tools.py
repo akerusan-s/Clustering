@@ -8,7 +8,7 @@ from random import random
 def show(objects, answers, centers):
     colors = ['black']
 
-    if centers:
+    if len(centers):
         colors = [(random(), random(), random()) for _ in range(len(centers))]
 
     fig, (ax1) = plt.subplots(nrows=1, ncols=1, figsize=(8, 8))

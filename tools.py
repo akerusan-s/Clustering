@@ -1,5 +1,4 @@
-from numpy.linalg import norm
-from numpy import array
+import numpy as np
 from pandas import read_csv
 import matplotlib.pyplot as plt
 from random import random
@@ -31,14 +30,37 @@ def load_2d_data(pth):
             st = i.split(",")
             x, y = int(st[4]), int(st[3])  # serum_cholesterol and resting_blood_pressure
             data.append([x, y])
-    return array(data)
+    return np.array(data, dtype="f")
 
 
 def load_interests(pth):
     # data with binary features
     df = read_csv(pth)
+
+    title_mapping = {"P": 0, "C": 1, "R": 2, "I": 3}
+    df['group'] = df['group'].map(title_mapping)
+
     return df
 
 
+def drop_missing_columns(datafr, threshold):
+    nan_info = datafr.isna().sum()
+
+    res = datafr.copy()
+    for i in nan_info.index:
+        if nan_info[i] > threshold:
+            res.drop(columns=i, inplace=True)
+
+    return res
+
+
 def dist(a, b):
-    return norm(b - a)
+    return np.linalg.norm(b - a)
+
+
+def normalize(data):
+    data_norm = data.copy().T
+    for feat_ind in range(data.shape[1]):
+        data_norm[feat_ind] = (data_norm[feat_ind] - np.min(data_norm[feat_ind])) / \
+                              (np.max(data_norm[feat_ind]) - np.min(data_norm[feat_ind]))
+    return data_norm.T

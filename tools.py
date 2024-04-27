@@ -58,9 +58,36 @@ def dist(a, b):
     return np.linalg.norm(b - a)
 
 
+def dist_squared(a, b):
+    return np.dot(b - a, b - a)
+
+
 def normalize(data):
     data_norm = data.copy().T
     for feat_ind in range(data.shape[1]):
         data_norm[feat_ind] = (data_norm[feat_ind] - np.min(data_norm[feat_ind])) / \
                               (np.max(data_norm[feat_ind]) - np.min(data_norm[feat_ind]))
     return data_norm.T
+
+
+def choose_farthest_objs(data, n=2):
+    dist_matrix = np.array([[dist_squared(x, y) for x in data] for y in data])
+
+    # distances between the object itself
+    for i in range(len(data)):
+        dist_matrix[i][i] = 1000000000000
+
+    # 2 farthest
+    min_obj_ind = np.argmin(dist_matrix)
+    row = min_obj_ind // len(data)
+    col = min_obj_ind % len(data)
+
+    objs = [row, col]
+
+    for i in range(n - 2):
+
+        # farthest point to the closest already chosen one
+        obj_matrix = np.array([min([dist(obj, center) for center in objs]) for obj in data])
+        objs.append(np.argmax(obj_matrix))
+
+    return np.array([data[ind] for ind in objs])

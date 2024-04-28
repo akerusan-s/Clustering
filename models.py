@@ -42,7 +42,7 @@ class KohonenClustering:
             self.centers[cluster_center_ind] = self.centers[cluster_center_ind] + \
                                                n * (rand_obj - self.centers[cluster_center_ind])
 
-            error = dist(self.centers[cluster_center_ind], rand_obj)
+            error = dist_squared(self.centers[cluster_center_ind], rand_obj)
             q = (1 - ls) * q + ls * error
             iterations += 1
 
@@ -57,10 +57,10 @@ class KohonenClustering:
         return self.centers
 
     def predict(self, sample):
-        return np.argmin([np.linalg.norm(sample - center) for center in self.centers])
+        return np.argmin([dist_squared(sample, center) for center in self.centers])
 
     def predict_best(self, sample):
-        return np.argmin([np.linalg.norm(sample - center) for center in self.best_centers])
+        return np.argmin([dist_squared(sample, center) for center in self.best_centers])
 
     def predict_list(self, samples):
         ans = np.array(

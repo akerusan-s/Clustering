@@ -1,6 +1,7 @@
 import numpy as np
-from pandas import read_csv
 import matplotlib.pyplot as plt
+
+from pandas import read_csv
 from random import random
 
 

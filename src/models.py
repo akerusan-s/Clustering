@@ -1,6 +1,7 @@
 import numpy as np
-from tools import dist_squared, dist, choose_farthest_objs
 import random
+
+from src.tools import dist_squared, dist, choose_farthest_objs
 from sklearn.cluster import KMeans
 
 

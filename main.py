@@ -1,9 +1,9 @@
 import pandas as pd
 
-from tools import *
-from models import KohonenClustering, Kmeans
-from metrics import *
-from visualization import show_chart
+from src.tools import *
+from src.models import KohonenClustering, Kmeans
+from src.metrics import *
+from src.visualization import show_chart
 
 
 # 2d data
@@ -21,9 +21,9 @@ from visualization import show_chart
 
 
 # interests data
-data = load_interests("kaggle_Interests_group.csv")
+data = load_interests("data/kaggle_Interests_group.csv")
 
-data = drop_missing_columns(data, 1000)                     # del features with 6000 Nulls
+data = drop_missing_columns(data, 2000)                     # del features with 6000 Nulls
 data.drop(columns=["group"], inplace=True)                  # categorical
 data.drop(columns=["grand_tot_interests"], inplace=True)    # linear-depend
 data.fillna(0, inplace=True)                                # Null fill by 0

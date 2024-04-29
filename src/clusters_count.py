@@ -3,7 +3,7 @@ from sklearn.metrics import silhouette_score
 from tools import load_interests, drop_missing_columns, normalize
 from models import *
 
-data = load_interests("kaggle_Interests_group.csv")
+data = load_interests("../data/kaggle_Interests_group.csv")
 
 data = drop_missing_columns(data, 1000)
 data.drop(columns=["group"], inplace=True)

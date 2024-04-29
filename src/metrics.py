@@ -1,8 +1,7 @@
 import numpy as np
 
 from sklearn.metrics import silhouette_score
-
-from tools import dist
+from src.tools import dist
 
 
 def cohesion(data, answers, centers):

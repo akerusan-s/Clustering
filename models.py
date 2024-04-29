@@ -13,14 +13,18 @@ class KohonenClustering:
         self.centers = None
         self.loss = -1
         self.iterations = -1
+        self.wins = None
 
         self.best_centers = None
         self.best_loss = -1
+        self.best_wins = None
 
     def fit(self, x_data, ls=0.001):
 
         obj_count = x_data.shape[0]
         feat_count = x_data.shape[1]
+
+        self.wins = [0 for i in range(self.k)]
 
         if self.init_type == "farthest":
             self.centers = choose_farthest_objs(x_data, self.k)
@@ -32,15 +36,29 @@ class KohonenClustering:
         q_prev = -1
 
         iterations = 1
-        while abs((q - q_prev) / q_prev) > 0.0001:
+        while abs((q - q_prev) / q_prev) > 0.00001:
             q_prev = q
-            n = 1 / iterations ** 1/2
+            n = 1 / iterations
 
             rand_obj = random.choice(x_data)
 
+            # classic
             cluster_center_ind = self.predict(rand_obj)
             self.centers[cluster_center_ind] = self.centers[cluster_center_ind] + \
-                                               n * (rand_obj - self.centers[cluster_center_ind])
+                n * (rand_obj - self.centers[cluster_center_ind])
+
+            # soft WTA
+            # b = iterations
+            #
+            # for center_ind in range(self.k):
+            #     if center_ind != cluster_center_ind:
+            #         self.centers[center_ind] = self.centers[center_ind] + \
+            #             n * (rand_obj - self.centers[center_ind]) * \
+            #             np.exp(-1 * b * dist_squared(rand_obj,
+            #                                          self.centers[center_ind]))
+
+            # conscience WTA
+            self.wins[cluster_center_ind] += 1
 
             error = dist_squared(self.centers[cluster_center_ind], rand_obj)
             q = (1 - ls) * q + ls * error
@@ -53,14 +71,21 @@ class KohonenClustering:
         if (q < self.best_loss) or (self.best_loss == -1):
             self.best_loss = q
             self.best_centers = self.centers[:]
+            self.best_wins = self.wins[:]
 
         return self.centers
 
     def predict(self, sample):
-        return np.argmin([dist_squared(sample, center) for center in self.centers])
+        # return np.argmin([dist(sample, self.centers[center_index])
+        #                   for center_index in range(self.k)])
+        return np.argmin([self.wins[center_index] * dist(sample, self.centers[center_index])
+                          for center_index in range(self.k)])
 
     def predict_best(self, sample):
-        return np.argmin([dist_squared(sample, center) for center in self.best_centers])
+        # return np.argmin([dist(sample, self.best_centers[center_index])
+        #                   for center_index in range(self.k)])
+        return np.argmin([self.best_wins[center_index] * dist(sample, self.best_centers[center_index])
+                          for center_index in range(self.k)])
 
     def predict_list(self, samples):
         ans = np.array(
